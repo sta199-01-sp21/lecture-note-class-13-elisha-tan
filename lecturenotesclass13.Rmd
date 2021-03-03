@@ -356,7 +356,7 @@ boot_medians <- manhattan %>%
   get_ci(level = 0.95)
 boot_medians
 ```
-With 95% confidence, the true median rent price of one-bedroom apartments in Manhattan based on this sample of 20 apartments is between 2,162 and 2,875 dollars.
+- We can say with 95% confidence that the true median rent price of one-bedroom apartments in Manhattan based on this sample of 20 apartments is between 2,162 and 2,875 dollars.
 
 ### A confidence interval for the population proportion - $p$
 
@@ -364,10 +364,10 @@ Consider the mice radiation dataset. Suppose we want to compute a 95% confidence
 
 First, identify the following:
 
-- Population: All mice that were not on treatment
-- Parameter of interest: Proportion of mice that died
-- Sample: Mice used in the experiment
-- Sample size: 522 mice
+- Population: All mice which were not on treatment
+- Parameter of interest: Proportion of mice which died
+- Sample: Mice not on treatment used in the experiment
+- Sample size: 261 mice
 
 ```{r boot_mice}
 set.seed(1902370)
@@ -429,7 +429,8 @@ mice_prop %>%
 
 
 Give an interpretation of your result.
-We can say with 95% confidence that the true proportion of mice who lived when given any amount of treatment with a sample size of 522 mice is between 0.268 and 0.335. 
+
+- We can say with 95% confidence that the true proportion of mice who lived when given any amount of treatment with a sample size of 522 mice is between 0.268 and 0.335. 
 
 # References
 
