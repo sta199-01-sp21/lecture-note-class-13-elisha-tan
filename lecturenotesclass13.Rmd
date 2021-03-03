@@ -189,7 +189,7 @@ Consider 20 1-bedroom apartments that were randomly selected on
 Craigslist Manhattan from apartments listed as "by owner".
 
 ```{r data_manhattan}
-manhattan <- read_csv("~/manhattan.csv")
+manhattan <- read_csv("~/R/lecture-note-class-13-elisha-tan/manhattan.csv")
 ```
 
 Consider 3-10 day survival of mice randomized to various
@@ -218,6 +218,7 @@ population %>%
 ```
 
 Take a sample with `slice_sample()` and compute the mean.
+*slice_sample(n = [sample size])*
 
 ```{r sample_iq_scores}
 population %>% 
@@ -250,10 +251,10 @@ Create a 95% bootstrap confidence interval for the population *mean* price of
 
 First, identify the following:
 
-- Population: 
-- Parameter of interest:
-- Sample:
-- Sample size:
+- Population: All 1-bedroom apartments in Manhattan
+- Parameter of interest: The mean price
+- Sample: the given sample of 1-bedroom apartments in Manhattan
+- Sample size: 20
 
 To create our confidence interval, we'll follow the four-step bootstrap
 scheme outlined in the slides using functions from `infer`.
@@ -272,6 +273,7 @@ scheme outlined in the slides using functions from `infer`.
 #### `infer`
 
 First, `specify()` the variable of interest, in this case `rent`.
+*Identifies response or explanatory variables*
 
 ```{r specify_manhattan}
 manhattan %>% 
@@ -281,16 +283,20 @@ manhattan %>%
 Second, `generate()` a fixed number of bootstrap samples. Here we'll generate
 10,000 bootstrap samples. Generally, the smaller your sample size, the more
 bootstrap samples you'll want to generate. 
+*Using your sample to create more samples*
 
 ```{r generate_manhattan}
+set.seed(1902370)
 manhattan %>% 
   specify(response = rent) %>% 
   generate(reps = 10000, type = "bootstrap")
 ```
 
 Finally, `calculate()` the relevant statistic for each bootstrap sample.
+*calculate() is from "infer" package; takes argument "stat = [mean, median, sum, prop, count, diff in means, diff in medians, diff in props, Chisq, f, slope, correlation, t, z,  etc]"*
 
 ```{r calculate_manhattan}
+set.seed(1902370)
 boot_means <- manhattan %>% 
   specify(response = rent) %>% 
   generate(reps = 10000, type = "bootstrap") %>% 
@@ -304,6 +310,7 @@ named `calculate`. It is broken up here to better understand the steps.
 Visualize `boot_means` with `ggplot()`.
 
 ```{r visualize_means_manhattan}
+set.seed(1902370)
 boot_means %>% 
   ggplot(aes(x = stat)) +
   geom_histogram(binwidth = 50)
@@ -314,6 +321,7 @@ For a 95% confidence interval, these bounds occur at the 2.5% and 97.5%
 quantiles.
 
 ```{r ci_rent_dplyr}
+set.seed(1902370)
 boot_means %>% 
   summarise(
     lb = quantile(stat, 0.025),
@@ -323,8 +331,9 @@ boot_means %>%
 
 The package `infer` also has a convenient function to do this: `get_ci()`. Use
 whichever method you prefer.
-
+*get_ci(dataframe, level = [confidence interval niddle %])
 ```{r ci_rent_infer}
+set.seed(1902370)
 get_ci(boot_means, level = 0.95)
 ```
 
@@ -339,8 +348,15 @@ population *median* price of 1-bedroom apartments in Manhattan. Do this in a
 single code chunk with a single pipeline. Provide an interpretation of your result.
 
 ```{r practice_1}
-
+set.seed(1902370)
+boot_medians <- manhattan %>% 
+  specify(response = rent) %>% 
+  generate(reps = 10000, type = "bootstrap") %>% 
+  calculate(stat = "median") %>%
+  get_ci(level = 0.95)
+boot_medians
 ```
+With 95% confidence, the true median rent price of one-bedroom apartments in Manhattan based on this sample of 20 apartments is between 2,162 and 2,875 dollars.
 
 ### A confidence interval for the population proportion - $p$
 
@@ -348,18 +364,20 @@ Consider the mice radiation dataset. Suppose we want to compute a 95% confidence
 
 First, identify the following:
 
-- Population: 
-- Parameter of interest:
-- Sample:
-- Sample size:
+- Population: All mice that were not on treatment
+- Parameter of interest: Proportion of mice that died
+- Sample: Mice used in the experiment
+- Sample size: 522 mice
 
 ```{r boot_mice}
+set.seed(1902370)
 boot_prop <- mice %>% 
   filter(treat == 0) %>% 
   mutate(died = if_else(died == 1, "yes", "no")) %>% 
   specify(response = died, success = "yes") %>% 
   generate(reps = 10000, type = "bootstrap") %>% 
   calculate(stat = "prop")
+
 ```
 
 ```{r ci_mice}
@@ -380,23 +398,38 @@ visualise(boot_prop) +
 
 Consider the mice radiation results. Suppose we want to compute a 90% confidence interval for the proportion of mice that lived while on the treatment, regardless of the dose.
 
+Consider 3-10 day survival of mice randomized to various
+neutron doses and streptomycin therapy or saline control.
 ```{r practice_2_bootstrap}
+set.seed(1902370)
+mice_prop <- mice %>% 
+  mutate(tr_and_live = treat == 1 & died == 0) %>%
+  specify(response = tr_and_live, success = "TRUE") %>% 
+  generate(reps = 10000, type = "bootstrap")
+mice_prop
 
 ```
 
 ```{r practice_2_ci}
-
+set.seed(1902370) 
+mice_ci <- mice_prop %>%
+  calculate(stat = "prop") %>%
+  get_ci(level = 0.90)
+mice_ci
 ```
 
 Visualizing our Resuts:
 
 ```{r practice_2_visualize}
-
+mice_prop %>%
+  calculate(stat = "prop") %>%
+  visualize() +
+    shade_ci(mice_ci)
 ```
 
 
 Give an interpretation of your result.
-
+We can say with 95% confidence that the true proportion of mice who lived when given any amount of treatment with a sample size of 522 mice is between 0.268 and 0.335. 
 
 # References
 
